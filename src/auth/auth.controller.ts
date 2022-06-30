@@ -1,12 +1,23 @@
-import { Body, Controller, HttpCode, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { GetCurrentUser, Public } from 'src/common/decorators';
 import { AtGuard, RtGuard } from 'src/common/guards';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private prismaService: PrismaService,
+  ) {}
 
   @Public()
   @Post('/local/signin')
@@ -31,5 +42,10 @@ export class AuthController {
     @GetCurrentUser('refreshToken') refreshToken: string,
   ) {
     return this.authService.refresh(id, refreshToken);
+  }
+
+  @Get('current')
+  currentUser(@GetCurrentUser('id') id: string) {
+    return this.prismaService.user.findUnique({ where: { id } });
   }
 }
