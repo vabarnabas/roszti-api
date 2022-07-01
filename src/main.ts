@@ -4,6 +4,6 @@ import { AtGuard } from './common/guards';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  await app.listen(9020);
+  await app.listen(process.env.PORT || 9020);
 }
 bootstrap();
