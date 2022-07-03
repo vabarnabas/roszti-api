@@ -17,12 +17,17 @@ export class UsersController {
 
   @Get()
   findAll(): Promise<User[]> {
-    return this.prismaService.user.findMany();
+    return this.prismaService.user.findMany({
+      include: { participant: true, profile: true, roles: true },
+    });
   }
 
   @Get(':id')
   findSpecificById(@Param('id') id: string): Promise<User> {
-    return this.prismaService.user.findUnique({ where: { id } });
+    return this.prismaService.user.findUnique({
+      where: { id },
+      include: { participant: true, profile: true, roles: true },
+    });
   }
 
   @Post()
@@ -32,7 +37,10 @@ export class UsersController {
       createUserInput.password = await hash(createUserInput.password, salt);
     }
 
-    return this.prismaService.user.create({ data: createUserInput });
+    return this.prismaService.user.create({
+      data: createUserInput,
+      include: { participant: true, profile: true, roles: true },
+    });
   }
 
   @Patch(':id')
@@ -45,11 +53,15 @@ export class UsersController {
     return this.prismaService.user.update({
       where: { id },
       data: updateUserInput,
+      include: { participant: true, profile: true, roles: true },
     });
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.prismaService.user.delete({ where: { id } });
+    return this.prismaService.user.delete({
+      where: { id },
+      include: { participant: true, profile: true, roles: true },
+    });
   }
 }
