@@ -51,11 +51,50 @@ model ExpertiseOnProfile {
 }
 
 model User {
-  id           String   @id @default(uuid())
+  id           String          @id @default(uuid())
   displayName  String
-  email        String   @unique
+  email        String          @unique
   code         String
   password     String
   refreshToken String?
   profile      Profile?
+  roles        RoleOnUser[]
+  participant  Participation[]
+}
+
+model Role {
+  id          String       @id @default(uuid())
+  displayName String       @unique
+  users       RoleOnUser[]
+  events      Event[]
+}
+
+model RoleOnUser {
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+  role   Role   @relation(fields: [roleId], references: [id])
+  roleId String
+
+  @@id([userId, roleId])
+}
+
+model Event {
+  id           String          @id @default(uuid())
+  displayName  String
+  description  String
+  type         String
+  startDate    DateTime
+  endDate      DateTime?
+  role         Role            @relation(fields: [roleId], references: [id])
+  roleId       String
+  participants Participation[]
+}
+
+model Participation {
+  participant   User   @relation(fields: [participantId], references: [id])
+  participantId String
+  event         Event  @relation(fields: [eventId], references: [id])
+  eventId       String
+
+  @@id([participantId, eventId])
 }
