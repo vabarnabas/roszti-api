@@ -53,9 +53,11 @@ model ExpertiseOnProfile {
 model User {
   id           String          @id @default(uuid())
   displayName  String
+  userName     String          @unique
   email        String          @unique
   code         String
   password     String
+  active       Boolean
   refreshToken String?
   profile      Profile?
   roles        RoleOnUser[]
