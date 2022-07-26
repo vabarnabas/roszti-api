@@ -65,10 +65,26 @@ model User {
 }
 
 model Role {
-  id          String       @id @default(uuid())
-  displayName String       @unique
+  id          String             @id @default(uuid())
+  code        String             @unique
   users       RoleOnUser[]
   events      Event[]
+  permissions PermissionOnRole[]
+}
+
+model Permission {
+  id    String             @id @default(uuid())
+  code  String
+  roles PermissionOnRole[]
+}
+
+model PermissionOnRole {
+  role         Role       @relation(fields: [roleId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+  roleId       String
+  permissionId String
+
+  @@id([roleId, permissionId])
 }
 
 model RoleOnUser {
