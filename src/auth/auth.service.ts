@@ -11,12 +11,13 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async getToken(id: string, email: string) {
+  async getToken(id: string, email: string, permissions: string[]) {
     const [at, rt] = await Promise.all([
       this.jwtService.signAsync(
         {
           id,
           email,
+          permissions,
         },
         { secret: 'at-secret', expiresIn: 60 * 60 },
       ),
@@ -24,6 +25,7 @@ export class AuthService {
         {
           id,
           email,
+          permissions,
         },
         { secret: 'rt-secret', expiresIn: 60 * 60 * 24 * 7 },
       ),
@@ -47,13 +49,30 @@ export class AuthService {
   async signinLocal(dto: AuthDto) {
     const user = await this.prismaService.user.findUnique({
       where: { email: dto.email },
+      include: { roles: true },
     });
     if (!user) throw new ForbiddenException('Access denied.');
 
     const passwordMatches = await compare(dto.password, user.password);
     if (!passwordMatches) throw new ForbiddenException('Access denied.');
 
-    const tokens = await this.getToken(user.id, user.email);
+    const roles = await this.prismaService.role.findMany({
+      where: { users: { every: { id: user.id } } },
+    });
+
+    const roleIds = roles.map((role) => {
+      return role.id;
+    });
+
+    const permissions = await this.prismaService.permission.findMany({
+      where: { roles: { every: { id: { in: roleIds } } } },
+    });
+
+    const permissionIds = permissions.map((permission) => {
+      return permission.code;
+    });
+
+    const tokens = await this.getToken(user.id, user.email, permissionIds);
     await this.updateRefreshTokenHash(user.id, tokens.refesh_token);
     return tokens;
   }
@@ -73,7 +92,7 @@ export class AuthService {
     const tokenMatches = await compare(refreshToken, user.refreshToken);
     if (!tokenMatches) throw new ForbiddenException('Access denied.');
 
-    const tokens = await this.getToken(user.id, user.email);
+    const tokens = await this.getToken(user.id, user.email, ['']);
     await this.updateRefreshTokenHash(user.id, tokens.refesh_token);
     return tokens;
   }

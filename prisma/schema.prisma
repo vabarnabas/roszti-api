@@ -60,40 +60,22 @@ model User {
   active       Boolean
   refreshToken String?
   profile      Profile?
-  roles        RoleOnUser[]
+  roles        Role[]
   participant  Participation[]
 }
 
 model Role {
-  id          String             @id @default(uuid())
-  code        String             @unique
-  users       RoleOnUser[]
+  id          String       @id @default(uuid())
+  code        String       @unique
+  users       User[]
   events      Event[]
-  permissions PermissionOnRole[]
+  permissions Permission[]
 }
 
 model Permission {
-  id    String             @id @default(uuid())
+  id    String @id @default(uuid())
   code  String
-  roles PermissionOnRole[]
-}
-
-model PermissionOnRole {
-  role         Role       @relation(fields: [roleId], references: [id])
-  permission   Permission @relation(fields: [permissionId], references: [id])
-  roleId       String
-  permissionId String
-
-  @@id([roleId, permissionId])
-}
-
-model RoleOnUser {
-  user   User   @relation(fields: [userId], references: [id])
-  userId String
-  role   Role   @relation(fields: [roleId], references: [id])
-  roleId String
-
-  @@id([userId, roleId])
+  roles Role[]
 }
 
 model Event {

@@ -10,12 +10,15 @@ import {
 import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { genSalt, hash } from 'bcrypt';
+import { PermissionType } from 'src/common/types/permission.types';
+import { Permit } from 'src/common/decorators/permit.decorator';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly prismaService: PrismaService) {}
 
   @Get()
+  @Permit(PermissionType.SuperAdmin)
   findAll(): Promise<User[]> {
     return this.prismaService.user.findMany({
       include: { participant: true, profile: true, roles: true },

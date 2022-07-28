@@ -8,6 +8,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AtGuard } from './common/guards';
 import { EventsController } from './events/events.controller';
 import { EventsModule } from './events/events.module';
+import { PermissionGuard } from './common/guards/permission.guard';
 
 @Module({
   imports: [PrismaModule, UsersModule, AuthModule, EventsModule],
@@ -17,6 +18,10 @@ import { EventsModule } from './events/events.module';
     {
       provide: APP_GUARD,
       useClass: AtGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: PermissionGuard,
     },
   ],
 })
