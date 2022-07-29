@@ -8,60 +8,42 @@ datasource db {
 }
 
 model Company {
-  id          String               @id @default(uuid())
+  id          String    @id @default(uuid())
   displayName String
   legalName   String
   category    String
-  profiles    CompaniesOnProfile[]
+  profiles    Profile[]
 }
 
 model Profile {
-  id        String               @id @default(uuid())
+  id        String      @id @default(uuid())
   email     String
   phone     String
   residency String
-  user      User                 @relation(fields: [userId], references: [id])
-  userId    String               @unique
-  companies CompaniesOnProfile[]
-  expertise ExpertiseOnProfile[]
-}
-
-model CompaniesOnProfile {
-  profile   Profile @relation(fields: [profileId], references: [id])
-  profileId String
-  company   Company @relation(fields: [companyId], references: [id])
-  companyId String
-
-  @@id([profileId, companyId])
+  user      User        @relation(fields: [userId], references: [id])
+  userId    String      @unique
+  companies Company[]
+  expertise Expertise[]
 }
 
 model Expertise {
-  id          String               @id @default(uuid())
-  displayName String               @unique
-  profiles    ExpertiseOnProfile[]
-}
-
-model ExpertiseOnProfile {
-  profile     Profile   @relation(fields: [profileId], references: [id])
-  profileId   String
-  expertise   Expertise @relation(fields: [expertiseId], references: [id])
-  expertiseId String
-
-  @@id([profileId, expertiseId])
+  id          String    @id @default(uuid())
+  displayName String    @unique
+  profiles    Profile[]
 }
 
 model User {
-  id           String          @id @default(uuid())
+  id           String   @id @default(uuid())
   displayName  String
-  userName     String          @unique
-  email        String          @unique
+  userName     String   @unique
+  email        String   @unique
   code         String
   password     String
   active       Boolean
   refreshToken String?
   profile      Profile?
   roles        Role[]
-  participant  Participation[]
+  participant  Event[]
 }
 
 model Role {
@@ -79,22 +61,13 @@ model Permission {
 }
 
 model Event {
-  id           String          @id @default(uuid())
+  id           String    @id @default(uuid())
   displayName  String
   description  String
   type         String
   startDate    DateTime
   endDate      DateTime?
-  role         Role            @relation(fields: [roleId], references: [id])
+  role         Role      @relation(fields: [roleId], references: [id])
   roleId       String
-  participants Participation[]
-}
-
-model Participation {
-  participant   User   @relation(fields: [participantId], references: [id])
-  participantId String
-  event         Event  @relation(fields: [eventId], references: [id])
-  eventId       String
-
-  @@id([participantId, eventId])
+  participants User[]
 }

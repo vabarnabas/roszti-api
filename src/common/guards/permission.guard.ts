@@ -16,11 +16,9 @@ export class PermissionGuard implements CanActivate {
     }
     const { user } = context.switchToHttp().getRequest();
 
-    console.log(user);
-
     return (
       requiredRoles.some((role) => user.permissions.includes(role)) ||
-      user.permissions.include(PermissionType.SuperAdmin)
+      user.permissions.includes(PermissionType.SuperAdmin)
     );
   }
 }

@@ -11,12 +11,18 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async getToken(id: string, email: string, permissions: string[]) {
+  async getToken(
+    id: string,
+    email: string,
+    userName: string,
+    permissions: string[],
+  ) {
     const [at, rt] = await Promise.all([
       this.jwtService.signAsync(
         {
           id,
           email,
+          userName,
           permissions,
         },
         { secret: 'at-secret', expiresIn: 60 * 60 },
@@ -25,6 +31,7 @@ export class AuthService {
         {
           id,
           email,
+          userName,
           permissions,
         },
         { secret: 'rt-secret', expiresIn: 60 * 60 * 24 * 7 },
@@ -72,7 +79,12 @@ export class AuthService {
       return permission.code;
     });
 
-    const tokens = await this.getToken(user.id, user.email, permissionIds);
+    const tokens = await this.getToken(
+      user.id,
+      user.email,
+      user.userName,
+      permissionIds,
+    );
     await this.updateRefreshTokenHash(user.id, tokens.refesh_token);
     return tokens;
   }
@@ -92,7 +104,9 @@ export class AuthService {
     const tokenMatches = await compare(refreshToken, user.refreshToken);
     if (!tokenMatches) throw new ForbiddenException('Access denied.');
 
-    const tokens = await this.getToken(user.id, user.email, ['']);
+    const tokens = await this.getToken(user.id, user.email, user.userName, [
+      '',
+    ]);
     await this.updateRefreshTokenHash(user.id, tokens.refesh_token);
     return tokens;
   }
