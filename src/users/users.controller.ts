@@ -19,7 +19,6 @@ export class UsersController {
   constructor(private readonly prismaService: PrismaService) {}
 
   @Get()
-  // @Permit(PermissionType.SuperAdmin)
   findAll(): Promise<User[]> {
     return this.prismaService.user.findMany({
       include: { participant: true, profile: true, roles: true },
