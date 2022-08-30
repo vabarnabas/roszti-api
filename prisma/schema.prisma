@@ -50,7 +50,6 @@ model Role {
   id          String       @id @default(uuid())
   code        String       @unique
   users       User[]
-  events      Event[]
   permissions Permission[]
 }
 
@@ -62,12 +61,11 @@ model Permission {
 
 model Event {
   id           String    @id @default(uuid())
+  slug         String    @unique
   displayName  String
   description  String
   type         String
   startDate    DateTime
   endDate      DateTime?
-  role         Role      @relation(fields: [roleId], references: [id])
-  roleId       String
   participants User[]
 }

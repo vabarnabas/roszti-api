@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   HttpCode,
   Post,
@@ -50,5 +51,39 @@ export class AuthController {
       where: { id },
       include: { participant: true, roles: true, profile: true },
     });
+  }
+
+  @Post('permit')
+  async permit(
+    @GetCurrentUser('id') id: string,
+    @Body() body: { permission: string },
+  ) {
+    const roles = await this.prismaService.role.findMany({
+      where: { users: { some: { id } } },
+    });
+
+    const roleIds = roles.map((role) => {
+      return role.id;
+    });
+
+    const permissions = await this.prismaService.permission.findMany({
+      where: { roles: { every: { id: { in: roleIds } } } },
+    });
+
+    const permissionIds = permissions.map((permission) => {
+      return permission.code;
+    });
+
+    if (
+      permissionIds
+        .map((permission) => {
+          return permission.toLowerCase();
+        })
+        .includes(body.permission.toLowerCase())
+    ) {
+      return true;
+    } else {
+      throw new ForbiddenException('Access denied.');
+    }
   }
 }

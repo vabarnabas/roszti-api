@@ -1,33 +1,61 @@
-import { User } from '@prisma/client';
+import { Permission, Role, User, Event } from '@prisma/client';
 import { PrismaClient } from '@prisma/client';
 import { hash, genSalt } from 'bcrypt';
+import { Optional } from 'src/common/types/utility.types';
 
 const prisma = new PrismaClient();
 
-const user: User = {
-  id: '233cb533-61c4-4e88-8267-2fccd39fda21',
-  displayName: 'Test User',
-  email: 'test@test.com',
-  userName: 'testuser',
-  password: 'test',
-  code: 'TEST01',
+const user: Optional<User, 'id'> = {
+  displayName: 'Super Admin',
+  email: 'superadmin@roszti.com',
+  userName: 'superadmin',
+  password: 'aa',
+  code: 'SUPER1',
   active: true,
   refreshToken: null,
 };
 
+const permission: Optional<Permission, 'id'> = {
+  code: 'SuperAdmin',
+};
+
+const role: Optional<Role, 'id'> = {
+  code: 'SuperAdmin',
+};
+
+const event: Optional<Event, 'id'> = {
+  displayName: 'Test Event',
+  description: 'This is a Test Event',
+  startDate: new Date(Date.now()),
+  endDate: null,
+  slug: 'testevent',
+  type: 'LOCAL',
+};
+
 const main = async () => {
-  console.log('Started Seeding...');
   if (user.password) {
     const salt = await genSalt();
     user.password = await hash(user.password, salt);
   }
 
-  console.log(user);
+  const createdPermission = await prisma.permission.create({
+    data: permission,
+  });
+
+  const createdRole = await prisma.role.create({
+    data: { ...role, permissions: { connect: { id: createdPermission.id } } },
+  });
 
   await prisma.user.create({
-    data: user,
+    data: {
+      ...user,
+      roles: { connect: { id: createdRole.id } },
+    },
   });
-  console.log('Seeding Done!');
+
+  await prisma.event.create({
+    data: event,
+  });
 };
 
 main()
