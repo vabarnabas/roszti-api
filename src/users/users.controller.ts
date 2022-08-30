@@ -27,25 +27,14 @@ export class UsersController {
 
   @Get(':id')
   async findSpecificById(@Param('id') id: string): Promise<User> {
-    const userById = await this.prismaService.user.findUnique({
-      where: { id },
+    const users = await this.prismaService.user.findMany({
+      where: { OR: [{ id: { equals: id } }, { userName: { equals: id } }] },
       include: { participant: true, profile: true, roles: true },
     });
 
-    if (!userById) {
-      const userByUserName = await this.prismaService.user.findUnique({
-        where: { userName: id },
-        include: { participant: true, profile: true, roles: true },
-      });
+    if (users.length === 0) throw new ForbiddenException('Access denied.');
 
-      if (!userByUserName) {
-        throw new ForbiddenException('Access denied.');
-      } else {
-        return userByUserName;
-      }
-    }
-
-    return userById;
+    return users[0];
   }
 
   @Post()
@@ -60,6 +49,71 @@ export class UsersController {
       data: createUserInput,
       include: { participant: true, profile: true, roles: true },
     });
+  }
+
+  @Post('roles/add/:id')
+  @Permit(PermissionType.UserManagement)
+  async connectRole(@Param('id') id: string, @Body() body: { roleId: string }) {
+    const users = await this.prismaService.user.findMany({
+      where: { OR: [{ id: { equals: id } }, { userName: { equals: id } }] },
+      include: { participant: true, profile: true, roles: true },
+    });
+
+    if (users.length === 0) throw new ForbiddenException('Access denied.');
+
+    if (body.roleId) {
+      const role = await this.prismaService.role.findUnique({
+        where: { id: body.roleId },
+      });
+
+      if (!role) throw new ForbiddenException('Access denied.');
+
+      return await this.prismaService.user.update({
+        where: { id: users[0].id },
+        data: {
+          roles: {
+            connect: { id: body.roleId },
+          },
+        },
+        include: { participant: true, profile: true, roles: true },
+      });
+    } else {
+      throw new ForbiddenException('Access denied.');
+    }
+  }
+
+  @Post('roles/remove/:id')
+  @Permit(PermissionType.UserManagement)
+  async disconnectRole(
+    @Param('id') id: string,
+    @Body() body: { roleId: string },
+  ) {
+    const users = await this.prismaService.user.findMany({
+      where: { OR: [{ id: { equals: id } }, { userName: { equals: id } }] },
+      include: { participant: true, profile: true, roles: true },
+    });
+
+    if (users.length === 0) throw new ForbiddenException('Access denied.');
+
+    if (body.roleId) {
+      const role = await this.prismaService.role.findUnique({
+        where: { id: body.roleId },
+      });
+
+      if (!role) throw new ForbiddenException('Access denied.');
+
+      return await this.prismaService.user.update({
+        where: { id: users[0].id },
+        data: {
+          roles: {
+            disconnect: { id: body.roleId },
+          },
+        },
+        include: { participant: true, profile: true, roles: true },
+      });
+    } else {
+      throw new ForbiddenException('Access denied.');
+    }
   }
 
   @Patch(':id')

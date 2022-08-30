@@ -64,7 +64,7 @@ export class AuthService {
     if (!passwordMatches) throw new ForbiddenException('Access denied.');
 
     const roles = await this.prismaService.role.findMany({
-      where: { users: { every: { id: user.id } } },
+      where: { users: { some: { id: user.id } } },
     });
 
     const roleIds = roles.map((role) => {

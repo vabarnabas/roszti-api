@@ -46,6 +46,9 @@ export class AuthController {
 
   @Get('current')
   currentUser(@GetCurrentUser('id') id: string) {
-    return this.prismaService.user.findUnique({ where: { id } });
+    return this.prismaService.user.findUnique({
+      where: { id },
+      include: { participant: true, roles: true, profile: true },
+    });
   }
 }
