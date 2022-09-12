@@ -9,9 +9,11 @@ import { AtGuard } from './common/guards';
 import { EventsController } from './events/events.controller';
 import { EventsModule } from './events/events.module';
 import { PermissionGuard } from './common/guards/permission.guard';
+import { EvaluationModule } from './evaluation/evaluation.module';
+import { ParticipantModule } from './participant/participant.module';
 
 @Module({
-  imports: [PrismaModule, UsersModule, AuthModule, EventsModule],
+  imports: [PrismaModule, UsersModule, AuthModule, EventsModule, EvaluationModule, ParticipantModule],
   controllers: [AppController, EventsController],
   providers: [
     AppService,

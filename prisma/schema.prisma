@@ -33,10 +33,10 @@ model Expertise {
 }
 
 model User {
-  id           String   @id @default(uuid())
+  id           String                @id @default(uuid())
   displayName  String
-  userName     String   @unique
-  email        String   @unique
+  userName     String                @unique
+  email        String                @unique
   code         String
   password     String
   active       Boolean
@@ -44,6 +44,33 @@ model User {
   profile      Profile?
   roles        Role[]
   participant  Event[]
+  review       InterviewEvaluation[]
+}
+
+model InterviewEvaluation {
+  id                     String               @id @default(uuid())
+  reviewer               User                 @relation(fields: [userId], references: [id])
+  reviewee               InterviewParticipant @relation(fields: [interviewParticipantId], references: [id])
+  userId                 String
+  interviewParticipantId String
+  description            String
+  confidence             Int
+  communication          Int
+  idiom                  Int
+  leadership             Int
+  creativity             Int
+  problemSolving         Int
+  motivation             Int
+  english                Int
+}
+
+model InterviewParticipant {
+  id          String                @id @default(uuid())
+  evaluation  InterviewEvaluation[]
+  displayName String
+  email       String
+  interviewAt DateTime
+  verdict     String?
 }
 
 model Role {
